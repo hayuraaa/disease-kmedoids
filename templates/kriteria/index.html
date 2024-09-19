@@ -1,0 +1,129 @@
+{% extends "layout/main_layout.html" %}
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="py-3 mb-4"><span class="text-muted fw-light">Dashboard /</span> {{ title }}</h4>
+
+    <div class="card">
+        <h5 class="card-header">Tabel Data {{ title }}</h5>
+        <div class="col-md-4 m-4">
+            <a href="" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add">Tambah Data</a>
+        </div>
+        {% with pesan = get_flashed_messages() %}
+          {% if pesan %}
+          {% for info in pesan %}
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{  info  }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          {% endfor %}
+          {% endif %}
+          {% endwith %}
+        <div class="table-responsive text-nowrap">
+            <table class="table">
+                <thead class="table">
+                    <tr>
+                        <th>No</th>
+                        <th>Tahun</th>
+                        <th>Inisial</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                    {% for row in kriteria %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ row.1 }}</td>
+                        <td>{{ row.2 }}</td>
+                        <td>
+                            <a href="" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#edit{{ row.0 }}">Edit</a>
+                            <a href="/delete_kriteria/{{ row.0 }}" class="btn btn-danger" onclick="return confirm('Apakah anda ingin menghapus data ini ?')">Delete</a>
+                        </td>
+                        <!-- edit modal  -->
+                        <div class="modal fade" id="edit{{ row.0 }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h4 class="modal-title" id="exampleModalLabel1">Edit {{ title }}</h4>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form action="{{ url_for('edit_kriteria') }}" method="POST">
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                <div class="col mb-4 mt-2">
+                                                    <div class="form-floating form-floating-outline">
+                                                        <input type="hidden" name="id_kriteria" value="{{ row.0 }}" />
+                                                        <input type="text" name="nama_kriteria" value="{{ row.1 }}" id="nameBasic" class="form-control"
+                                                            required placeholder="" />
+                                                        <label for="nameBasic">Tahun</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                        
+                                            <div class="col mb-4">
+                                                <div class="form-floating form-floating-outline">
+                                                    <input type="text" name="inisial_kriteria" value="{{ row.2 }}" id="emailBasic" class="form-control"
+                                                        required placeholder="" />
+                                                    <label for="emailBasic">Inisial</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                                Kembali
+                                            </button>
+                                            <button type="submit" class="btn btn-primary">Simpan</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!--Add  Modal -->
+<div class="modal fade" id="add" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel1">Tambah {{ title }}</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('add_kriteria') }}" method="POST">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col mb-4 mt-2">
+                            <div class="form-floating form-floating-outline">
+                                <input type="number" name="nama_kriteria" id="nameBasic" class="form-control"
+                                    required placeholder="Enter Tahun" />
+                                <label for="nameBasic">Tahun</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col mb-4">
+                        <div class="form-floating form-floating-outline">
+                            <input type="text" name="inisial_kriteria" id="emailBasic" class="form-control"
+                                required placeholder="enter inisial" />
+                            <label for="emailBasic">inisial</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Kembali
+                    </button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+    {% endblock %}

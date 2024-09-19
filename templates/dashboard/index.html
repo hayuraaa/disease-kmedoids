@@ -1,0 +1,82 @@
+{% extends "layout/main_layout.html" %}
+{% block content %}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row gy-4">
+        <!-- Transactions -->
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="py-3 mb-2"><span class="text-muted fw-black">Dashboard </span></h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 col-6">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar">
+                                    <div class="avatar-initial bg-primary rounded shadow">
+                                        <i class="mdi mdi-trending-up mdi-24px"></i>
+                                    </div>
+                                </div>
+                                <div class="ms-3">
+                                    <div class="small mb-1">Data Dataset</div>
+                                    <h5 class="mb-0">{{ data_total }} Komentar</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-6">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar">
+                                    <div class="avatar-initial bg-info rounded shadow">
+                                        <i class="mdi mdi-currency-usd mdi-24px"></i>
+                                    </div>
+                                </div>
+                                <div class="ms-3">
+                                    <div class="small mb-1">Data Users</div>
+                                    <h5 class="mb-0">{{ data_users }} User</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 col-6">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar">
+                                    <div class="avatar-initial bg-primary rounded shadow">
+                                        <i class="mdi mdi-trending-up mdi-24px"></i>
+                                    </div>
+                                </div>
+                                <div class="ms-3">
+                                    <div class="small mb-1">Data Dataset</div>
+                                    <h5 class="mb-0">{{ data_kriteria }} Komentar</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-6">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar">
+                                    <div class="avatar-initial bg-info rounded shadow">
+                                        <i class="mdi mdi-currency-usd mdi-24px"></i>
+                                    </div>
+                                </div>
+                                <div class="ms-3">
+                                    <div class="small mb-1">Data Users</div>
+                                    <h5 class="mb-0">{{ data_users }} User</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--/ Transactions -->
+
+
+
+        <!-- Data Tables -->
+
+        <!--/ Data Tables -->
+    </div>
+</div>
+<!-- / Content -->
+{% endblock %}

@@ -1,0 +1,208 @@
+{% extends "layout/main_layout.html" %}
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="py-3 mb-4"><span class="text-muted fw-light">Dashboard /</span> {{ title }}</h4>
+
+    <div class="card">
+        <h5 class="card-header">Tabel Data Dataset</h5>
+        
+        <div class="table-responsive text-nowrap">
+            <table class="table">
+                <thead class="table">
+                    <tr>
+                        <th>No</th>
+                        <th>Username</th>
+                        <th>Komentar</th>
+                        <th>Label</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                    {% for row in dataset %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ row.1 }}</td>
+                        <td>{{ row.2 }}</td>
+                        <td>{{ row.3 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br>
+        </div>
+    </div>
+    <br>
+    <br>
+    <div class="card">
+        <h5 class="card-header">Hasil Pemebersihan Text</h5>
+        <div class="table-responsive text-nowrap">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Username</th>
+                        <th>Komentar</th>
+                        <th>Label</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(text_bersih[0]|length) %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ text_bersih[0][i] }}</td>
+                        <td>{{ text_bersih[1][i] }}</td>
+                        <td>{{ text_bersih[2][i] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <br>
+    <br>
+    <div class="card">
+        <h5 class="card-header">Hasil TF-IDF</h5>
+        <div class="table-responsive text-nowrap">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Username</th>
+                        <th>Komentar</th>
+                        <th>Label</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(text_nilai[0]|length) %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ text_nilai[0][i] }}</td>
+                        <td>{{ text_nilai[1][i] }}</td>
+                        <td>{{ text_nilai[2][i] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <br>
+    <br>
+    <div class="card">
+        <h5 class="card-header">Pembagian Data</h5>
+        <div class="table-responsive text-nowrap">
+        </div>
+    </div>
+    <br>
+    <br>
+    <div class="card">
+        <h5 class="card-header">Data Latih</h5>
+        <div class="table-responsive text-nowrap">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Username</th>
+                        <th>Komentar</th>
+                        <th>Label</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(data_latih[0]|length) %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ data_latih[0][i] }}</td>
+                        <td>{{ data_latih[1][i] }}</td>
+                        <td>{{ data_latih[2][i] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <br>
+    <br>
+    <div class="card">
+        <h5 class="card-header">Data Uji</h5>
+        <div class="table-responsive text-nowrap">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Username</th>
+                        <th>Komentar</th>
+                        <th>Label</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(data_uji[0]|length) %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ data_uji[0][i] }}</td>
+                        <td>{{ data_uji[1][i] }}</td>
+                        <td>{{ data_uji[2][i] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <br>
+    <br>
+    <div class="card">
+        <h5 class="card-header">Data Uji Hasil Prediksi</h5>
+        <div class="table-responsive text-nowrap">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Username</th>
+                        <th>Komentar</th>
+                        <th>Label</th>
+                        <th>Prediksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(data_prediksi[0]|length) %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ data_prediksi[0][i] }}</td>
+                        <td>{{ data_prediksi[1][i] }}</td>
+                        <td>{{ data_prediksi[2][i] }}</td>
+                        <td>{{ data_prediksi[3][i] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <br>
+    <br>
+    <div class="card">
+        <h5 class="card-header">Data Hasil Evaluasi</h5>
+        <div class="table-responsive text-nowrap">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Accuracy Score</th>
+                        <th>Precision Score</th>
+                        <th>Recall Score</th>
+                        <th>F1 Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ akurasi }}</td>
+                        <td>{{ presisi }}</td>
+                        <td>{{ recall }}</td>
+                        <td>{{ f1 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+{% endblock %}
