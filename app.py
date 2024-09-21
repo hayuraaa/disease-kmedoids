@@ -28,107 +28,11 @@ app.config['MYSQL_DB'] = 'tbc-kmedoids'
 mysql = MySQL(app)
 
 
-
+#-------Login---------#
 @app.route('/', methods=['GET', 'POST'])
 def home():
-   if request.method == 'POST':
-      title = "Analisis"
-      id_produk = int(request.form['produk'])
-      input_komentar = request.form['komentar']
-
-      cur = mysql.connection.cursor()
-      # cur.execute('SELECT * FROM komentar WHERE id_produk = %s', (id_produk,))
-      cur.execute('SELECT * FROM komentar')
-      dataset = cur.fetchall()
-      cur.close()
-
-      cur = mysql.connection.cursor()
-      cur.execute('SELECT kata_positif, nilai FROM frasa_positif')
-      positif_data = cur.fetchall()
-      cur.close()
-
-      cur = mysql.connection.cursor()
-      cur.execute('SELECT kata_negatif, nilai FROM frasa_negatif')
-      negatif_data = cur.fetchall()
-      cur.close()
-
-      phrase_score = {}
-      for kata, bobot in positif_data:
-         phrase_score[kata] = float(bobot)
-
-      for kata, bobot in negatif_data:
-         phrase_score[kata] = float(bobot)
-
-      X_komen = []
-      y_label = []
-
-      for row in dataset:
-         X_komen.append(preprocess_text(row[3]))
-         y_label.append(row[4])
-      
-      vectorizer = TfidfVectorizer()
-      vectorizer.fit(X_komen)
-
-      preprocess_input = [preprocess_text(comment) for comment in input_komentar.split()]
-      tf_input_komen = vectorizer.transform([' '.join(preprocess_input)])
-
-      input_score = []
-      # count preprocess input score using phrase_score
-      for word in preprocess_input:
-         score = phrase_score[word] if word in phrase_score else 0
-         label = 'netral'
-         if score > 0:
-            label = 'positif'
-         elif score < 0:
-            label = 'negatif'
-         else:
-            label = 'netral'
-         input_score.append([word, score, label])
-
-      values, counts = np.unique(y_label, return_counts=True)
-      print(f"RAW DATA: {values[0]}: {counts[0]} | {values[1]}: {counts[1]}")
-
-      NEGATIVE_COUNT = 0
-      POSITIVE_COUNT = 0
-      MAX_COUNT = min(counts)
-
-      X_train = []
-      y_train = []
-
-      for i in range(len(y_label)):
-         X_train.append(X_komen[i])
-         y_train.append(y_label[i])
-         # if y_label[i] == 'negatif' and NEGATIVE_COUNT < MAX_COUNT:
-         #    X_train.append(X_komen[i])
-         #    y_train.append(y_label[i])
-         #    NEGATIVE_COUNT += 1
-         # elif y_label[i] == 'positif' and POSITIVE_COUNT < MAX_COUNT:
-         #    X_train.append(X_komen[i])
-         #    y_train.append(y_label[i])
-         #    POSITIVE_COUNT += 1
-
-      values, counts = np.unique(y_train, return_counts=True)
-      print(f"FILTERED DATA: {values[0]}: {counts[0]} | {values[1]}: {counts[1]}")
-
-      X_train = vectorizer.transform(X_train)
-      model_svm = SVC(kernel='linear')
-      model_svm.fit(X_train, y_train)
-
-      # # Predict sentiment on the testing data
-      y_pred = model_svm.predict(tf_input_komen)
-
-      print(y_pred)
-      return render_template('frontend/index.html',title=title, komentar=input_komentar, prediksi=y_pred, corpus=input_score)
-
-   else:
-      title = "Analisis"
-
-      cur = mysql.connection.cursor()
-      cur.execute('SELECT * FROM produk')
-      produk = cur.fetchall()
-      cur.close()
-
-      return render_template('frontend/index.html', title=title, produk=produk)
+   
+   return render_template('auth/login.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -171,6 +75,7 @@ def logout():
     title = 'logout'
     session.clear()
     return render_template('auth/login.html', values=title)
+#-------Login---------#   
    
 @app.route('/dashboard')
 def dashboard():
@@ -410,206 +315,128 @@ def delete_kriteria(id_kriteria):
       return render_template('auth/login.html', values=title)
 # end fungsi kriteria penyakit 
 
- 
-# Preprocessing function
-def preprocess_text(text):
-    # Case Folding 
-    # Lowercase
-    text = text.lower()
-    
-    # Remove special characters and digits
-    text = re.sub(r'\W', ' ', text)
-    text = re.sub(r'\d+', '', text)
-    
-    # Tokenization
-    words = text.split()
-    
-    #Filtering
-    # Remove stopwords
-    stop_words = set(stopwords.words('english'))
-    words = [word for word in words if word not in stop_words]
-    
-    # Lemmatization
-    lemmatizer = WordNetLemmatizer()
-    words = [lemmatizer.lemmatize(word) for word in words]
-    
-    # Join the words back into a single string
-    processed_text = ' '.join(words)
-    
-    return processed_text
-
-# algoritma
-@app.route('/algoritma')
-def algoritma():
+# Fungsi untuk melihat data jenis penyakit
+@app.route('/data_penyakit')
+def data_penyakit():
    if 'status' in session and session['status'] == "Login":
-      title = 'Algoritma SVM'
-
+         
+      title = 'Data Jenis Penyakit'
       cur = mysql.connection.cursor()
-      cur.execute('SELECT p.id_produk, k.kategori, p.produk FROM produk p JOIN kategori k ON p.id_kategori = k.id_kategori')
-      produk = cur.fetchall()
+      cur.execute('SELECT * FROM jenis_penyakit')
+      jenis_penyakit = cur.fetchall()
       cur.close()
 
-      return render_template('algoritma/index.html', title=title, produk=produk)
-   else :
-      title = 'Belom Login'
-      return render_template('auth/login.html', values=title)
-
-@app.route('/komentar_algoritma', methods=['POST'])
-def komentar_algoritma():
+      return render_template('kecamatan/jenis_penyakit.html', title=title, jenis_penyakit=jenis_penyakit)
+   else:
+      return redirect(url_for('auth/login.html'))
+   
+   
+@app.route('/kecamatan/<int:id>')
+def lihat_kecamatan(id):
    if 'status' in session and session['status'] == "Login":
+      # Mendapatkan data jenis penyakit berdasarkan id
+      cur = mysql.connection.cursor()
+      cur.execute('SELECT * FROM jenis_penyakit WHERE id_jenis = %s', (id,))
+      jenis_penyakit = cur.fetchone()
 
-      if request.method == 'POST':
-         nama = request.form['nama']
-         id_produk = int(request.form['produk'])
+      # Mendapatkan daftar kecamatan berdasarkan jenis penyakit
+      cur.execute('SELECT * FROM kecamatan WHERE id_jenis = %s', (id,))
+      kecamatan = cur.fetchall()
 
-         title = nama
-         id = id_produk
-         cur = mysql.connection.cursor()
-         cur.execute('SELECT * FROM komentar WHERE id_produk = %s', (id_produk,))
-         data_komentar = cur.fetchall()
-         cur.close()
+      # Mendapatkan daftar kriteria
+      cur.execute('SELECT * FROM kriteria')
+      kriteria = cur.fetchall()
+      
+      kecamatan_data = []
+      
+      # Ambil bobot untuk setiap kecamatan
+      for kec in kecamatan:
+         cur.execute('SELECT * FROM data_bobot WHERE id_kecamatan = %s', (kec[0],))
+         bobot = cur.fetchall()  # Asumsikan menghasilkan list dari tuple [(bobot1,), (bobot2,), ...]
+         kecamatan_data.append((kec, bobot))
 
-         cur = mysql.connection.cursor()
-         cur.execute('SELECT * FROM komentar WHERE id_produk = %s', (id_produk,))
-         dataset = cur.fetchall()
-         cur.close()
-         
+      cur.close()
 
-         usernames = []
-         komentars = []
+      return render_template('kecamatan/kecamatan.html', jenis_penyakit=jenis_penyakit, kecamatan=kecamatan_data, kriteria=kriteria)
+   else:
+        return redirect(url_for('auth/login.html'))
+   
+# Menambahkan kecamatan dan nilai kriteria
+@app.route('/add_kecamatan', methods=['POST'])
+def add_kecamatan():
+   if 'status' in session and session['status'] == "Login":
+      nama_kecamatan = request.form['nama_kecamatan']
+      inisial_kecamatan = request.form['inisial_kecamatan']
+      id_jenis = request.form['id_jenis']
 
-         for row in dataset:
-            username = row[2]
-            komentar = row[3]
+      cur = mysql.connection.cursor()
+      cur.execute("INSERT INTO kecamatan (id_jenis, nama_kecamatan, inisial_kecamatan) VALUES (%s, %s, %s)", (id_jenis, nama_kecamatan, inisial_kecamatan))
+      mysql.connection.commit()
+      id_kecamatan = cur.lastrowid
 
-            usernames.append(username)
-            komentars.append(komentar)
-         
-         # Menerapkan preprocess_text pada setiap komentar
-         komentars = [preprocess_text(comment) for comment in komentars]
-         
-         cur = mysql.connection.cursor()
-         cur.execute('SELECT kata_positif, nilai FROM frasa_positif')
-         positif_data = cur.fetchall()
-         cur.close()
+      kriteria = request.form.getlist('kriteria[]')
+      nilai = request.form.getlist('nilai[]')
 
-         cur = mysql.connection.cursor()
-         cur.execute('SELECT kata_negatif, nilai FROM frasa_negatif')
-         negatif_data = cur.fetchall()
-         cur.close()
-
-         positif = {}
-         for kata, bobot in positif_data:
-            positif[kata] = float(bobot)
-
-         negatif = {}
-         for kata, bobot in negatif_data:
-            negatif[kata] = float(bobot)
+      for i in range(len(kriteria)):
+         cur.execute("INSERT INTO data_bobot (id_kecamatan, id_kriteria, bobot) VALUES (%s, %s, %s)", (id_kecamatan, kriteria[i], nilai[i]))
         
-         # Tokenisasi kalimat
-         skor_sentimen_kalimat = []
+      mysql.connection.commit()
+      cur.close()
 
-         for kal in komentars:
-            kata_kalimat = kal.split()
-            # Menghitung skor sentimen kalimat untuk setiap kata
-            skor_sentimen_kata = []
-            for kata in kata_kalimat:
-               if kata in positif:
-                     skor_sentimen_kata.append(str(positif[kata]))
-               elif kata in negatif:
-                     skor_sentimen_kata.append(str(negatif[kata]))
-               else:
-                     skor_sentimen_kata.append("0")
+      flash("Data kecamatan berhasil ditambahkan")
+      return redirect(url_for('lihat_kecamatan', id=id_jenis))
+   else:
+      return redirect(url_for('auth/login.html'))
+     
+# Menghapus kecamatan
+@app.route('/delete_kecamatan/<int:id_kecamatan>')
+def delete_kecamatan(id_kecamatan):
+   if 'status' in session and session['status'] == "Login":
+      cur = mysql.connection.cursor()
+      cur.execute("DELETE FROM kecamatan WHERE id_kecamatan = %s", (id_kecamatan,))
+      cur.execute("DELETE FROM data_bobot WHERE id_kecamatan = %s", (id_kecamatan,))
+      mysql.connection.commit()
+      cur.close()
 
-            # Menghitung jumlah total sentimen dari semua kata dalam kalimat
-            jumlah_total_sentimen = sum(map(float, skor_sentimen_kata))
-            
-            if jumlah_total_sentimen >= 0:
-               label = "positif"
-            else:
-               label = "negatif"
-               
-            # Menyimpan hasil sentimen kalimat dan label
-            # skor_sentimen_kalimat.append((kal, skor_sentimen_kata, jumlah_total_sentimen, label))
-            skor_sentimen_kalimat.append((kal, label))
-         # menambahkan username pada komentar yang sudah di labelin 
-         for i in range(len(skor_sentimen_kalimat)):
-               skor_sentimen_kalimat[i] = (usernames[i],) + skor_sentimen_kalimat[i]
+      flash("Data kecamatan berhasil dihapus")
+      return redirect(request.referrer)
+   else:
+      return redirect(url_for('auth/login.html'))
 
-         pelabelan = skor_sentimen_kalimat
-         pengguna = []
-         komen = []
-         label = []
+@app.route('/edit_kecamatan', methods=['POST'])
+def edit_kecamatan():
+   if 'status' in session and session['status'] == "Login":
+      # Ambil data dari form
+      id_kecamatan = request.form['id_kecamatan']
+      nama_kecamatan = request.form['nama_kecamatan']
+      inisial_kecamatan = request.form.get('inisial_kecamatan', None)
+      id_jenis = request.form['id_jenis']
 
+      cur = mysql.connection.cursor()
+      
+      # Update data kecamatan
+      cur.execute("UPDATE kecamatan SET nama_kecamatan = %s, inisial_kecamatan = %s WHERE id_kecamatan = %s", 
+                  (nama_kecamatan, inisial_kecamatan, id_kecamatan))
+      
+      # Ambil data kriteria dan bobot baru
+      kriteria_ids = request.form.getlist('kriteria_ids[]')
+      nilai_bobot = request.form.getlist('nilai_bobot[]')
 
-         for row in skor_sentimen_kalimat:
-            pengguna.append(row[0])
-            komen.append(row[1])
-            label.append(row[2])
-         
-         text_bersih = [pengguna, komen]
+      # Validasi: Pastikan jumlah kriteria dan bobot sama
+      if len(kriteria_ids) == len(nilai_bobot):
+         for kriteria_id, bobot in zip(kriteria_ids, nilai_bobot):
+            cur.execute("UPDATE data_bobot SET bobot = %s WHERE id_kecamatan = %s AND id_kriteria = %s", 
+                        (bobot, id_kecamatan, kriteria_id))
 
-         vectorizer = TfidfVectorizer(max_features=5000)
-         komen = vectorizer.fit_transform(komen)
+      mysql.connection.commit()
+      cur.close()
 
-         text_nilai = [pengguna, komen, label]
-
-         train_size = int(0.8 * komen.shape[0])
-
-         # Bagi data latih dan data uji
-         
-         z_train = pengguna[:train_size]
-         X_train = komen[:train_size]
-         y_train = label[:train_size]
-         z_test = pengguna[train_size:]
-         X_test = komen[train_size:]
-         y_test = label[train_size:]
-
-         data_latih = [z_train, X_train, y_train]
-         data_uji = [z_test, X_test, y_test]
-
-         
-         model_svm = SVC(kernel='linear', C=1)
-         model_svm.fit(X_train, y_train)
-
-         # # Predict sentiment on the testing data
-         y_pred = model_svm.predict(X_test)
+      flash("Data kecamatan berhasil diupdate")
+      return redirect(url_for('lihat_kecamatan', id=id_jenis))
+   else:
+      return redirect(url_for('auth/login.html'))
 
 
-         data_prediksi = [z_test, X_test, y_test, y_pred]
-
-         label_encode = LabelEncoder()
-         # numerik label 
-         label_uji_encode = label_encode.fit_transform(y_test)
-         prediksi_encode = label_encode.fit_transform(y_pred)
-
-         print(label_uji_encode)
-         print(prediksi_encode)
-         # evaluasi
-         akurasi = accuracy_score(label_uji_encode, prediksi_encode)
-         presisi = precision_score(label_uji_encode, prediksi_encode)
-         recall = recall_score(label_uji_encode, prediksi_encode)
-         f1 = f1_score(label_uji_encode, prediksi_encode)
-
-         print(akurasi)
-
-         return render_template('algoritma/komentar.html',
-                              title=title,
-                              akurasi=akurasi,
-                              presisi=presisi,
-                              recall=recall,
-                              f1=f1,
-                              data_prediksi=data_prediksi,
-                              data_latih=data_latih,
-                              data_uji=data_uji, 
-                              data_komentar=data_komentar,
-                              text_nilai=text_nilai,
-                              pelabelan=pelabelan
-                              )
-
-   else :   
-      title = 'Belom Login'
-      return render_template('auth/login.html', values=title)
 
 if __name__ == '__main__':
    app.run(debug=True)

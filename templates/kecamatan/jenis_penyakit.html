@@ -1,0 +1,32 @@
+{% extends "layout/main_layout.html" %}
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="py-3 mb-4"><span class="text-muted fw-light">Dashboard /</span> {{ title }}</h4>
+
+    <div class="card">
+        <h5 class="card-header">Tabel Data {{ title }}</h5>
+        <div class="table-responsive text-nowrap">
+            <table class="table">
+                <thead class="table">
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Penyakit</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                    {% for penyakit in jenis_penyakit %}
+                    <tr>
+                        <td>{{ loop.index }}</td> <!-- Menggunakan loop.index untuk nomor urut -->
+                        <td>{{ penyakit[1] }}</td> <!-- Mengakses nama penyakit, asumsi kolom kedua adalah nama penyakit -->
+                        <td>
+                            <a href="{{ url_for('lihat_kecamatan', id=penyakit[0]) }}" class="btn btn-primary">Lihat Data</a> <!-- Gunakan penyakit[0] untuk ID penyakit -->
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
