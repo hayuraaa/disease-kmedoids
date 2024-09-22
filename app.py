@@ -1,13 +1,20 @@
 from flask import Flask, redirect, request, render_template, url_for, session, flash
 from flask_mysqldb import MySQL
+import pymysql
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from sklearn.preprocessing import LabelEncoder 
 import numpy as np
+import random
+from math import sqrt
 from sklearn.preprocessing import LabelEncoder
 import pandas as pd
+from sklearn.metrics import pairwise_distances_argmin_min
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
+import matplotlib.pyplot as plt
+import io
+import base64
 import re
 import nltk
 from nltk.corpus import stopwords
@@ -330,7 +337,7 @@ def data_penyakit():
    else:
       return redirect(url_for('auth/login.html'))
    
-   
+# Fungsi untuk melihat detail dataenis penyakit  
 @app.route('/kecamatan/<int:id>')
 def lihat_kecamatan(id):
    if 'status' in session and session['status'] == "Login":
@@ -403,6 +410,7 @@ def delete_kecamatan(id_kecamatan):
    else:
       return redirect(url_for('auth/login.html'))
 
+# Mengedit Data kecamatan
 @app.route('/edit_kecamatan', methods=['POST'])
 def edit_kecamatan():
    if 'status' in session and session['status'] == "Login":
@@ -437,6 +445,110 @@ def edit_kecamatan():
       return redirect(url_for('auth/login.html'))
 
 
+#------------ELBOW------------#
+def get_data_dummy():
+    # Data 10 baris dengan 4 kolom
+    data = np.array([
+        [1.0, 2.0, 3.0, 4.0],
+        [2.1, 3.5, 4.0, 5.5],
+        [1.5, 2.8, 3.3, 4.1],
+        [5.2, 6.3, 7.4, 8.5],
+        [5.5, 6.1, 7.0, 8.0],
+        [3.2, 4.2, 5.2, 6.2],
+        [4.1, 5.2, 6.3, 7.4],
+        [2.9, 3.8, 4.7, 5.6],
+        [6.5, 7.5, 8.5, 9.5],
+        [7.0, 8.0, 9.0, 10.0]
+    ])
+    # Nama kecamatan
+    kecamatan_names = [
+        "Kecamatan A", "Kecamatan B", "Kecamatan C", 
+        "Kecamatan D", "Kecamatan E", "Kecamatan F", 
+        "Kecamatan G", "Kecamatan H", "Kecamatan I", "Kecamatan J"
+    ]
+    
+    return data, kecamatan_names
 
+data, kecamatan = get_data_dummy()
+
+def hitung_jarak_euclidean(vektor1, vektor2):
+    jarak = np.sum((np.array(vektor1) - np.array(vektor2)) ** 2)
+    return np.sqrt(jarak)
+
+def tentukan_medoid_terdekat(data, medoids):
+    cluster_terdekat = []
+    for row in data:
+        jarak_min = float('inf')
+        medoid_min = None
+        for i, medoid in enumerate(medoids):
+            jarak = hitung_jarak_euclidean(row, medoid)
+            if jarak < jarak_min:
+                jarak_min = jarak
+                medoid_min = i
+        cluster_terdekat.append(medoid_min)
+    return np.array(cluster_terdekat)
+
+def perbarui_medoid(data, cluster_terdekat, k):
+    medoids = np.zeros((k, data.shape[1]))
+    for i in range(k):
+        # Pilih anggota dari cluster i
+        anggota_cluster = data[cluster_terdekat == i]
+        if len(anggota_cluster) == 0:
+            continue
+        
+        # Hitung total jarak untuk setiap anggota dan pilih sebagai medoid baru
+        jarak_terkecil = float('inf')
+        medoid_baru = anggota_cluster[0]
+        
+        for calon_medoid in anggota_cluster:
+            total_jarak = np.sum([hitung_jarak_euclidean(calon_medoid, anggota) for anggota in anggota_cluster])
+            if total_jarak < jarak_terkecil:
+                jarak_terkecil = total_jarak
+                medoid_baru = calon_medoid
+        
+        medoids[i] = medoid_baru
+
+    return medoids
+
+def hitung_wcss(data, medoids, cluster_terdekat):
+    wcss = 0
+    for i, row in enumerate(data):
+        medoid = medoids[cluster_terdekat[i]]
+        wcss += np.sum((row - medoid) ** 2)
+    return wcss
+
+def metode_elbow(data, max_k=10):
+    wcss_values = []
+    
+    for k in range(1, max_k + 1):
+        # Inisialisasi medoid secara acak dari data
+        medoids = data[np.random.choice(data.shape[0], k, replace=False)]
+        cluster_terdekat = np.zeros(data.shape[0])
+
+        for _ in range(100):  # Maksimal 100 iterasi
+            cluster_terdekat = tentukan_medoid_terdekat(data, medoids)
+            medoids_baru = perbarui_medoid(data, cluster_terdekat, k)
+            if np.all(medoids == medoids_baru):
+                break
+            medoids = medoids_baru
+
+        # Hitung WCSS
+        wcss = hitung_wcss(data, medoids, cluster_terdekat)
+        wcss_values.append(wcss)
+
+    return wcss_values
+
+@app.route('/elbow')
+def elbow():
+    # Dapatkan data dummy
+    data, kecamatan = get_data_dummy()
+
+    # Jalankan metode Elbow
+    wcss_values = metode_elbow(data)
+
+    # Kirim hasil ke template untuk ditampilkan
+    return render_template('elbow/index.html', wcss_values=wcss_values)
+ 
+ 
 if __name__ == '__main__':
    app.run(debug=True)
