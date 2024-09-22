@@ -1,0 +1,30 @@
+{% extends "layout/main_layout.html" %}
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="py-3 mb-4"><span class="text-muted fw-light">Dashboard /</span> {{ title }}</h4>
+
+    <!-- Tabel Data -->
+    <h5>Data Table</h5>
+    <div class="table-responsive">
+        {{ tabel_data | safe }}
+    </div>
+
+    <!-- Tabel Normalisasi -->
+    <h5>Normalized Data Table</h5>
+    <div class="table-responsive">
+        {{ tabel_normalisasi | safe }}
+    </div>
+
+    <!-- Tabel Hasil Clustering -->
+    <h5>Clustering Results</h5>
+    <div class="table-responsive">
+        {{ tabel_hasil | safe }}
+    </div>
+
+    <!-- Tabel Iterasi Clustering -->
+    <h5>Clustering Iterations</h5>
+    <div class="table-responsive">
+        {{ tabel_iterasi | safe }}
+    </div>
+</div>
+{% endblock %}
