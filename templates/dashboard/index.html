@@ -3,65 +3,73 @@
 
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="row gy-4">
-        <!-- Transactions -->
+        <!-- Dashboard Cards -->
+        <h4 class="py-1 mb-0"><span class="fw-black">Selamat Datang Di Sistem Clustering !</span></h4>
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="py-3 mb-2"><span class="text-muted fw-black">Dashboard </span></h4>
+                    <h4 class="py-3 mb-2"><span class="text-muted fw-black">Dashboard</span></h4>
                 </div>
                 <div class="card-body">
                     <div class="row g-3 mb-4">
+                        <!-- Total Data Dataset Card -->
                         <div class="col-md-6 col-6">
                             <div class="d-flex align-items-center">
                                 <div class="avatar">
                                     <div class="avatar-initial bg-primary rounded shadow">
-                                        <i class="mdi mdi-trending-up mdi-24px"></i>
+                                        <i class="mdi mdi-database mdi-24px"></i>
                                     </div>
                                 </div>
                                 <div class="ms-3">
-                                    <div class="small mb-1">Data Dataset</div>
-                                    <h5 class="mb-0">{{ data_total }} Komentar</h5>
+                                    <div class="small mb-1">Total Dataset</div>
+                                    <h5 class="mb-0">{{ data_total }} Dataset</h5>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Total Users Card -->
                         <div class="col-md-6 col-6">
                             <div class="d-flex align-items-center">
                                 <div class="avatar">
                                     <div class="avatar-initial bg-info rounded shadow">
-                                        <i class="mdi mdi-currency-usd mdi-24px"></i>
+                                        <i class="mdi mdi-account mdi-24px"></i>
                                     </div>
                                 </div>
                                 <div class="ms-3">
-                                    <div class="small mb-1">Data Users</div>
+                                    <div class="small mb-1">Total Users</div>
                                     <h5 class="mb-0">{{ data_users }} User</h5>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                     <div class="row g-3 mb-4">
+                        <!-- Total Data Kriteria Card -->
                         <div class="col-md-6 col-6">
                             <div class="d-flex align-items-center">
                                 <div class="avatar">
-                                    <div class="avatar-initial bg-primary rounded shadow">
-                                        <i class="mdi mdi-trending-up mdi-24px"></i>
+                                    <div class="avatar-initial bg-warning rounded shadow">
+                                        <i class="mdi mdi-chart-pie mdi-24px"></i>
                                     </div>
                                 </div>
                                 <div class="ms-3">
-                                    <div class="small mb-1">Data Dataset</div>
-                                    <h5 class="mb-0">{{ data_kriteria }} Komentar</h5>
+                                    <div class="small mb-1">Total Kriteria</div>
+                                    <h5 class="mb-0">{{ data_kriteria }} Kriteria</h5>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Total Kecamatan Data -->
                         <div class="col-md-6 col-6">
                             <div class="d-flex align-items-center">
                                 <div class="avatar">
-                                    <div class="avatar-initial bg-info rounded shadow">
-                                        <i class="mdi mdi-currency-usd mdi-24px"></i>
+                                    <div class="avatar-initial bg-success rounded shadow">
+                                        <i class="mdi mdi-city mdi-24px"></i>
                                     </div>
                                 </div>
                                 <div class="ms-3">
-                                    <div class="small mb-1">Data Users</div>
-                                    <h5 class="mb-0">{{ data_users }} User</h5>
+                                    <div class="small mb-1">Total Kecamatan</div>
+                                    <h5 class="mb-0">{{ data_kecamatan }} Kecamatan</h5>
                                 </div>
                             </div>
                         </div>
@@ -69,14 +77,40 @@
                 </div>
             </div>
         </div>
-        <!--/ Transactions -->
+        <!--/ Dashboard Cards -->
 
+        <!-- Informasi Teks Kiri-Kanan -->
+        <div class="col-lg-12">
+            <div class="row gy-3">
+                <!-- Informasi Metode Elbow -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Metode Elbow</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Metode Elbow adalah teknik untuk menentukan jumlah optimal dari cluster dalam data. Pada grafik Elbow, sumbu X menunjukkan jumlah cluster, sementara sumbu Y menunjukkan total kesalahan kuadrat (sum of squared errors, SSE). Elbow point adalah titik di mana penurunan SSE mulai melambat, menunjukkan jumlah cluster yang optimal.</p>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Informasi Metode K-Medoids -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Metode K-Medoids</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>K-Medoids adalah algoritma clustering yang mirip dengan K-Means, tetapi berbeda dalam pemilihan pusat cluster (medoid). Medoid adalah titik data yang terletak di pusat dari sebuah cluster, sehingga lebih tahan terhadap outlier dibandingkan dengan centroid pada K-Means. Algoritma ini sangat cocok untuk data yang mengandung noise atau outlier.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--/ Informasi Teks Kiri-Kanan -->
 
-        <!-- Data Tables -->
-
-        <!--/ Data Tables -->
     </div>
 </div>
 <!-- / Content -->
+
 {% endblock %}
