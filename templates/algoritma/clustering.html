@@ -3,28 +3,82 @@
 <div class="container-xxl flex-grow-1 container-p-y">
     <h4 class="py-3 mb-4"><span class="text-muted fw-light">Dashboard /</span> {{ title }}</h4>
 
-    <!-- Tabel Data -->
-    <h5>Data Table</h5>
+    <!-- Original Data Table -->
+    <h5>Original Data Table</h5>
     <div class="table-responsive">
-        {{ tabel_data | safe }}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Kecamatan</th>
+                    {% for krit in kriteria %}
+                        <th>{{ krit[1] }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in range(original_data|length) %}
+                    <tr>
+                        <td>{{ clustering_results[i]['kecamatan'] }}</td>
+                        {% for value in original_data[i] %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
-    <!-- Tabel Normalisasi -->
+    <!-- Normalized Data Table -->
     <h5>Normalized Data Table</h5>
     <div class="table-responsive">
-        {{ tabel_normalisasi | safe }}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Kecamatan</th>
+                    {% for krit in kriteria %}
+                        <th>{{ krit[1] }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in range(normalized_data|length) %}
+                    <tr>
+                        <td>{{ clustering_results[i]['kecamatan'] }}</td>
+                        {% for value in normalized_data[i] %}
+                            <td>{{ value|round(4) }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
-    <!-- Tabel Hasil Clustering -->
+    <!-- Clustering Results Table -->
     <h5>Clustering Results</h5>
     <div class="table-responsive">
-        {{ tabel_hasil | safe }}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Kecamatan</th>
+                    <th>Cluster</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in clustering_results %}
+                    <tr>
+                        <td>{{ result['kecamatan'] }}</td>
+                        <td>{{ result['cluster'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
-    <!-- Tabel Iterasi Clustering -->
-    <h5>Clustering Iterations</h5>
-    <div class="table-responsive">
-        {{ tabel_iterasi | safe }}
+    <!-- Clustering Results Plot -->
+    <h5>Clustering Results Plot</h5>
+    <div class="text-center">
+        <img src="data:image/png;base64,{{ plot_url }}" alt="K-Medoids Clustering Plot">
     </div>
+
 </div>
 {% endblock %}

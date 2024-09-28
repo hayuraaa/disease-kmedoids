@@ -4,7 +4,6 @@ import pymysql
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from sklearn.preprocessing import LabelEncoder 
-from sklearn.preprocessing import StandardScaler
 import numpy as np
 import random
 from math import sqrt
@@ -564,36 +563,6 @@ def pilih_clustering():
       return render_template('algoritma/pilih_clustering.html', title=title, jenis_penyakit=pilih_clustering)
    else:
       return redirect(url_for('auth/login.html'))
-  
-# K-Medoids clustering functions
-def calculate_distance(point1, point2):
-    return np.sqrt(np.sum((point1 - point2)**2))
-
-def initialize_medoids(data, k):
-    return data[np.random.choice(data.shape[0], k, replace=False)]
-
-def assign_points_to_medoids(data, medoids):
-    distances = np.sqrt(((data[:, np.newaxis] - medoids) ** 2).sum(axis=2))
-    return distances.argmin(axis=1)
-
-def update_medoids(data, labels, k):
-    new_medoids = np.zeros((k, data.shape[1]))
-    for i in range(k):
-        cluster_points = data[labels == i]
-        if len(cluster_points) > 0:
-            new_medoid = cluster_points[np.argmin(np.sum((cluster_points[:, np.newaxis] - cluster_points) ** 2, axis=0))]
-            new_medoids[i] = new_medoid
-    return new_medoids
-
-def k_medoids(data, k, max_iterations=100):
-    medoids = initialize_medoids(data, k)
-    for _ in range(max_iterations):
-        old_medoids = medoids.copy()
-        labels = assign_points_to_medoids(data, medoids)
-        medoids = update_medoids(data, labels, k)
-        if np.all(old_medoids == medoids):
-            break
-    return medoids, labels  
    
 @app.route('/clustering/<int:id>', methods=['GET', 'POST'])
 def clustering(id):
@@ -622,55 +591,148 @@ def clustering(id):
         kriteria = cur.fetchall()
         cur.close()
 
-        # Prepare data for clustering
-        data = np.array(list(nilai.values()))
-        kecamatan_names = list(kecamatan.values())
+        data = list(nilai.values())
+        kecamatan_list = list(kecamatan.values())
+        kriteria_list = [k[1] for k in kriteria]
 
-        # Normalize the data
-        scaler = StandardScaler()
-        normalized_data = scaler.fit_transform(data)
+        def tampilData(kecamatan, kriteria, data):
+            table = "<table class='table table-bordered'><tr><th>No</th><th>Kecamatan</th>"
+            for k in kriteria:
+                table += f"<th>{k}</th>"
+            table += "</tr>"
 
-        # Perform K-Medoids clustering
-        k = 3  # You can adjust this or make it user-selectable
-        medoids, labels = k_medoids(normalized_data, k)
+            for index, row in enumerate(data):
+                table += f"<tr><td>{index + 1}</td><td>{kecamatan[index]}</td>"
+                for nilai in row:
+                    table += f"<td>{nilai}</td>"
+                table += "</tr>"
+            table += "</table>"
+            return table
 
-        # Prepare results for display
-        clustering_results = []
-        for i, label in enumerate(labels):
-            clustering_results.append({
-                'kecamatan': kecamatan_names[i],
-                'cluster': label + 1,
-                'data': data[i].tolist()
-            })
+        def normalisasi(data):
+            minMax = [{'min': min(col), 'max': max(col)} for col in zip(*data)]
+            data_normalisasi = []
+            for row in data:
+                data_normalisasi.append([(val - minMax[i]['min']) / (minMax[i]['max'] - minMax[i]['min']) for i, val in enumerate(row)])
+            return data_normalisasi
 
-        # Create a scatter plot
-        plt.figure(figsize=(10, 6))
-        colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
-        for i in range(k):
-            cluster_points = normalized_data[labels == i]
-            plt.scatter(cluster_points[:, 0], cluster_points[:, 1], c=colors[i], label=f'Cluster {i+1}')
-        plt.scatter(medoids[:, 0], medoids[:, 1], c='yellow', s=200, marker='*', label='Medoids')
-        plt.title('K-Medoids Clustering Results')
-        plt.xlabel('Feature 1')
-        plt.ylabel('Feature 2')
-        plt.legend()
+        data_normalisasi = normalisasi(data)
 
-        # Save plot to a buffer
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png')
-        buf.seek(0)
-        plot_url = base64.b64encode(buf.getvalue()).decode('utf8')
+        def tampilDataNormalisasi(kecamatan, kriteria, data):
+            table = "<table class='table table-bordered'><tr><th>No</th><th>Kecamatan</th>"
+            for k in kriteria:
+                table += f"<th>{k}</th>"
+            table += "</tr>"
 
-        return render_template('algoritma/clustering.html',
-                               title='K-Medoids Clustering',
-                               jenis_penyakit=jenis_penyakit,
-                               kriteria=kriteria,
-                               original_data=data.tolist(),
-                               normalized_data=normalized_data.tolist(),
-                               clustering_results=clustering_results,
-                               plot_url=plot_url)
+            for index, row in enumerate(data):
+                table += f"<tr><td>{index + 1}</td><td>{kecamatan[index]}</td>"
+                for nilai in row:
+                    table += f"<td>{nilai}</td>"
+                table += "</tr>"
+
+            table += "</table>"
+            return table
+
+        tabel_normalisasi = tampilDataNormalisasi(kecamatan_list, kriteria_list, data_normalisasi)
+
+        def hitungJarakEuclidean(vektor1, vektor2):
+            return sum((x - y) ** 2 for x, y in zip(vektor1, vektor2)) ** 0.5
+
+        def alokasikanKeMedoid(data, medoids):
+            cluster_terdekat = []
+            for row in data:
+                jarak_min = float('inf')
+                cluster_min = None
+                for i, medoid in enumerate(medoids):
+                    jarak = hitungJarakEuclidean(row, medoid)
+                    if jarak < jarak_min:
+                        jarak_min = jarak
+                        cluster_min = i
+                cluster_terdekat.append(cluster_min)
+            return cluster_terdekat
+
+        def totalBiaya(data, medoids, cluster_terdekat):
+            return sum(hitungJarakEuclidean(row, medoids[cluster_terdekat[i]]) for i, row in enumerate(data))
+
+        def updateMedoids(data, cluster_terdekat, k):
+            new_medoids = []
+            for i in range(k):
+                cluster_points = [data[j] for j in range(len(data)) if cluster_terdekat[j] == i]
+                min_cost = float('inf')
+                best_medoid = None
+                for point in cluster_points:
+                    cost = sum(hitungJarakEuclidean(point, other) for other in cluster_points)
+                    if cost < min_cost:
+                        min_cost = cost
+                        best_medoid = point
+                new_medoids.append(best_medoid)
+            return new_medoids
+
+        # Allow manual selection of initial medoids via form
+        if request.method == 'POST':
+            selected_medoids = [data_normalisasi[int(idx)] for idx in request.form.getlist('medoids')]
+        else:
+            selected_medoids = data_normalisasi[:3]  # Default to first 3 rows as medoids
+
+        def kMedoids(data, medoids):
+            cluster_terdekat = alokasikanKeMedoid(data, medoids)
+            total_cost = totalBiaya(data, medoids, cluster_terdekat)
+            iteration = 1
+            results = []
+
+            while True:
+                new_medoids = updateMedoids(data, cluster_terdekat, len(medoids))
+                new_cluster_terdekat = alokasikanKeMedoid(data, new_medoids)
+                new_total_cost = totalBiaya(data, new_medoids, new_cluster_terdekat)
+                iteration_result = {
+                    'iteration': iteration,
+                    'medoids': new_medoids,
+                    'cost': new_total_cost,
+                    'clusters': new_cluster_terdekat
+                }
+                results.append(iteration_result)
+
+                if new_total_cost >= total_cost or total_cost - new_total_cost <= 0:
+                    break
+
+                medoids, cluster_terdekat, total_cost = new_medoids, new_cluster_terdekat, new_total_cost
+                iteration += 1
+
+            return results
+
+        results = kMedoids(data_normalisasi, selected_medoids)
+
+        def tampilTabelHasil(kecamatan, cluster_terdekat):
+            table = "<table class='table table-bordered'><tr><th>No</th><th>Kecamatan</th><th>Kluster</th></tr>"
+            for index, row in enumerate(kecamatan):
+                table += f"<tr><td>{index + 1}</td><td>{row}</td><td>C{cluster_terdekat[index] + 1}</td></tr>"
+            table += "</table>"
+            return table
+
+        def tampilIterasi(results, kecamatan):
+            table = ""
+            for result in results:
+                table += f"<h5>Iteration {result['iteration']}</h5>"
+                table += "<h6>Medoids:</h6><ul>"
+                for medoid in result['medoids']:
+                    table += f"<li>{medoid}</li>"
+                table += "</ul>"
+                table += tampilTabelHasil(kecamatan, result['clusters'])
+            return table
+
+        tabel_hasil = tampilTabelHasil(kecamatan_list, results[-1]['clusters'])
+        tabel_iterasi = tampilIterasi(results, kecamatan_list)
+
+        return render_template('algoritma/clustering.html', 
+                               title=jenis_penyakit[1], 
+                               tabel_data=tampilData(kecamatan_list, kriteria_list, data), 
+                               tabel_normalisasi=tabel_normalisasi,
+                               tabel_hasil=tabel_hasil,
+                               tabel_iterasi=tabel_iterasi,
+                               selected_medoids=selected_medoids)
     else:
         return redirect(url_for('login'))
+
      
 if __name__ == '__main__':
    app.run(debug=True)
