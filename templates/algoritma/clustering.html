@@ -1,84 +1,98 @@
 {% extends "layout/main_layout.html" %}
 {% block content %}
-<div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="py-3 mb-4"><span class="text-muted fw-light">Dashboard /</span> {{ title }}</h4>
+<div class="container-fluid page-body-wrapper">
+    <div class="main-panel">
+        <div class="content-wrapper">
+            <h3 class="page-title">Data {{ jenis_penyakit['nama_jenis'] }}</h3>
+            <a href="{{ url_for('pilih_clustering') }}" class="btn btn-danger">Kembali</a>
+            <br><br>
 
-    <!-- Original Data Table -->
-    <h5>Original Data Table</h5>
-    <div class="table-responsive">
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Kecamatan</th>
-                    {% for krit in kriteria %}
-                        <th>{{ krit[1] }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for i in range(original_data|length) %}
-                    <tr>
-                        <td>{{ clustering_results[i]['kecamatan'] }}</td>
-                        {% for value in original_data[i] %}
-                            <td>{{ value }}</td>
+            <!-- Original Data Table -->
+            <h4 class="card-title">Original Data</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Kecamatan</th>
+                            {% for krit in kriteria %}
+                                <th>{{ krit[1] }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in range(original_data|length) %}
+                            <tr>
+                                <td>{{ i + 1 }}</td>
+                                <td>{{ clustering_results[i]['kecamatan'] }}</td>
+                                {% for value in original_data[i] %}
+                                    <td>{{ value }}</td>
+                                {% endfor %}
+                            </tr>
                         {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                    </tbody>
+                </table>
+            </div>
 
-    <!-- Normalized Data Table -->
-    <h5>Normalized Data Table</h5>
-    <div class="table-responsive">
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Kecamatan</th>
-                    {% for krit in kriteria %}
-                        <th>{{ krit[1] }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for i in range(normalized_data|length) %}
-                    <tr>
-                        <td>{{ clustering_results[i]['kecamatan'] }}</td>
-                        {% for value in normalized_data[i] %}
-                            <td>{{ value|round(4) }}</td>
+            <!-- Normalized Data Table -->
+            <h4 class="card-title">Normalized Data</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Kecamatan</th>
+                            {% for krit in kriteria %}
+                                <th>{{ krit[1] }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in range(normalized_data|length) %}
+                            <tr>
+                                <td>{{ i + 1 }}</td>
+                                <td>{{ clustering_results[i]['kecamatan'] }}</td>
+                                {% for value in normalized_data[i] %}
+                                    <td>{{ value|round(4) }}</td>
+                                {% endfor %}
+                            </tr>
                         {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                    </tbody>
+                </table>
+            </div>
 
-    <!-- Clustering Results Table -->
-    <h5>Clustering Results</h5>
-    <div class="table-responsive">
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Kecamatan</th>
-                    <th>Cluster</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for result in clustering_results %}
-                    <tr>
-                        <td>{{ result['kecamatan'] }}</td>
-                        <td>{{ result['cluster'] }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+            <!-- Clustering Results Table -->
+            <h4 class="card-title">Clustering Results</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Kecamatan</th>
+                            <th>Cluster</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in clustering_results %}
+                            <tr>
+                                <td>{{ result['kecamatan'] }}</td>
+                                <td>{{ result['cluster'] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-    <!-- Clustering Results Plot -->
-    <h5>Clustering Results Plot</h5>
-    <div class="text-center">
-        <img src="data:image/png;base64,{{ plot_url }}" alt="K-Medoids Clustering Plot">
-    </div>
+            <!-- Clustering Results Count -->
+            <h4 class="card-title">Jumlah Klaster</h4>
+            <ul>
+                <li>Tinggi (C1): {{ total_clusters[0] }}</li>
+                <li>Sedang (C2): {{ total_clusters[1] }}</li>
+                <li>Rendah (C3): {{ total_clusters[2] }}</li>
+            </ul>
 
+            <!-- Additional Elements like Graphs can be added here -->
+
+        </div>
+    </div>
 </div>
 {% endblock %}

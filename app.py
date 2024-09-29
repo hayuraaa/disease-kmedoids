@@ -602,6 +602,7 @@ def clustering(id):
         cur.execute('SELECT * FROM jenis_penyakit WHERE id_jenis = %s', (id,))
         jenis_penyakit = cur.fetchone()
 
+        # Get the kecamatan data and corresponding kriteria
         cur.execute('''
             SELECT kecamatan.id_kecamatan, kecamatan.nama_kecamatan, data_bobot.id_kriteria, data_bobot.bobot 
             FROM kecamatan 
@@ -618,6 +619,7 @@ def clustering(id):
             nilai[row[0]].append(row[3])
             kecamatan[row[0]] = row[1]
 
+        # Get kriteria
         cur.execute('SELECT * FROM kriteria')
         kriteria = cur.fetchall()
         cur.close()
@@ -626,40 +628,59 @@ def clustering(id):
         data = np.array(list(nilai.values()))
         kecamatan_names = list(kecamatan.values())
 
+        # Normalization function
+        def normalize(data):
+            min_max = []
+            for i in range(data.shape[1]):
+                min_val = np.min(data[:, i])
+                max_val = np.max(data[:, i])
+                min_max.append((min_val, max_val))
+
+            normalized_data = np.zeros(data.shape)
+            for i in range(data.shape[1]):
+                min_val, max_val = min_max[i]
+                normalized_data[:, i] = (data[:, i] - min_val) / (max_val - min_val)
+
+            return normalized_data
+
         # Normalize the data
-        scaler = StandardScaler()
-        normalized_data = scaler.fit_transform(data)
+        normalized_data = normalize(data)
 
-        # Perform K-Medoids clustering
-        k = 3  # You can adjust this or make it user-selectable
-        medoids, labels = k_medoids(normalized_data, k)
+        # Initialize medoid
+        def initialize_medoids(data, id):
+            if id in [1, 2, 3, 4, 5]:
+                return [data[0], data[1], data[2]]  # Change as necessary
+            return [data[0], data[1], data[2]]
 
-        # Prepare results for display
+        medoids = initialize_medoids(normalized_data, id)
+
+        # Clustering logic
+        def calculate_distance(point1, point2):
+            return np.sqrt(np.sum((point1 - point2) ** 2))
+
+        def assign_clusters(data, medoids):
+            clusters = []
+            for point in data:
+                distances = [calculate_distance(point, medoid) for medoid in medoids]
+                clusters.append(np.argmin(distances))
+            return clusters
+
+        # Main loop for clustering
+        clusters = assign_clusters(normalized_data, medoids)
+
+        # Prepare the results for display
         clustering_results = []
-        for i, label in enumerate(labels):
+        for i, cluster in enumerate(clusters):
             clustering_results.append({
                 'kecamatan': kecamatan_names[i],
-                'cluster': label + 1,
-                'data': data[i].tolist()
+                'cluster': cluster + 1,
+                'data': normalized_data[i].tolist()
             })
 
-        # Create a scatter plot
-        plt.figure(figsize=(10, 6))
-        colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
-        for i in range(k):
-            cluster_points = normalized_data[labels == i]
-            plt.scatter(cluster_points[:, 0], cluster_points[:, 1], c=colors[i], label=f'Cluster {i+1}')
-        plt.scatter(medoids[:, 0], medoids[:, 1], c='yellow', s=200, marker='*', label='Medoids')
-        plt.title('K-Medoids Clustering Results')
-        plt.xlabel('Feature 1')
-        plt.ylabel('Feature 2')
-        plt.legend()
-
-        # Save plot to a buffer
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png')
-        buf.seek(0)
-        plot_url = base64.b64encode(buf.getvalue()).decode('utf8')
+        # Prepare data for display in the template
+        total_clusters = {0: 0, 1: 0, 2: 0}
+        for cluster in clusters:
+            total_clusters[cluster] += 1
 
         return render_template('algoritma/clustering.html',
                                title='K-Medoids Clustering',
@@ -668,9 +689,10 @@ def clustering(id):
                                original_data=data.tolist(),
                                normalized_data=normalized_data.tolist(),
                                clustering_results=clustering_results,
-                               plot_url=plot_url)
-    else:
-        return redirect(url_for('login'))
-     
+                               total_clusters=total_clusters)
+
+    return redirect(url_for('login'))
+
+
 if __name__ == '__main__':
    app.run(debug=True)
