@@ -569,32 +569,60 @@ def pilih_clustering():
 def calculate_distance(point1, point2):
     return np.sqrt(np.sum((point1 - point2)**2))
 
-def initialize_medoids(data, k):
+def initialize_medoids(data, k, initial_medoids=None):
+    if initial_medoids is not None and len(initial_medoids) == k:
+        return np.array([data[i] for i in initial_medoids])
     return data[np.random.choice(data.shape[0], k, replace=False)]
 
 def assign_points_to_medoids(data, medoids):
-    distances = np.sqrt(((data[:, np.newaxis] - medoids) ** 2).sum(axis=2))
-    return distances.argmin(axis=1)
+    distances = np.array([[calculate_distance(point, medoid) for medoid in medoids] for point in data])
+    return np.argmin(distances, axis=1), distances
 
-def update_medoids(data, labels, k):
-    new_medoids = np.zeros((k, data.shape[1]))
-    for i in range(k):
-        cluster_points = data[labels == i]
-        if len(cluster_points) > 0:
-            new_medoid = cluster_points[np.argmin(np.sum((cluster_points[:, np.newaxis] - cluster_points) ** 2, axis=0))]
-            new_medoids[i] = new_medoid
-    return new_medoids
+def calculate_total_cost(distances, labels):
+    return sum(distances[i, labels[i]] for i in range(len(labels)))
 
-def k_medoids(data, k, max_iterations=100):
-    medoids = initialize_medoids(data, k)
-    for _ in range(max_iterations):
-        old_medoids = medoids.copy()
-        labels = assign_points_to_medoids(data, medoids)
-        medoids = update_medoids(data, labels, k)
-        if np.all(old_medoids == medoids):
+def k_medoids(data, k, max_iterations=100, initial_medoids=None, second_medoids=None):
+    medoids = initialize_medoids(data, k, initial_medoids)
+    labels, distances = assign_points_to_medoids(data, medoids)
+    current_cost = calculate_total_cost(distances, labels)
+    
+    iteration_history = [{
+        'iteration': 0,
+        'medoids': medoids.tolist(),
+        'labels': labels.tolist(),
+        'total_distance': current_cost,
+        'change': 0
+    }]
+    
+    for iteration in range(1, max_iterations + 1):
+        if iteration == 1 and second_medoids is not None:
+            new_medoids = initialize_medoids(data, k, second_medoids)
+        else:
+            new_medoids = data[np.random.choice(data.shape[0], k, replace=False)]
+        
+        new_labels, new_distances = assign_points_to_medoids(data, new_medoids)
+        new_cost = calculate_total_cost(new_distances, new_labels)
+        
+        change = new_cost - current_cost
+        
+        iteration_history.append({
+            'iteration': iteration,
+            'medoids': new_medoids.tolist(),
+            'labels': new_labels.tolist(),
+            'total_distance': new_cost,
+            'change': change
+        })
+        
+        if change >= 0:
             break
-    return medoids, labels  
-   
+        
+        medoids = new_medoids
+        labels = new_labels
+        distances = new_distances
+        current_cost = new_cost
+    
+    return medoids, labels, iteration_history
+ 
 @app.route('/clustering/<int:id>', methods=['GET', 'POST'])
 def clustering(id):
     if 'status' in session and session['status'] == "Login":
@@ -628,71 +656,39 @@ def clustering(id):
         data = np.array(list(nilai.values()))
         kecamatan_names = list(kecamatan.values())
 
-        # Normalization function
-        def normalize(data):
-            min_max = []
-            for i in range(data.shape[1]):
-                min_val = np.min(data[:, i])
-                max_val = np.max(data[:, i])
-                min_max.append((min_val, max_val))
-
-            normalized_data = np.zeros(data.shape)
-            for i in range(data.shape[1]):
-                min_val, max_val = min_max[i]
-                normalized_data[:, i] = (data[:, i] - min_val) / (max_val - min_val)
-
-            return normalized_data
-
         # Normalize the data
-        normalized_data = normalize(data)
+        normalized_data = (data - np.min(data, axis=0)) / (np.max(data, axis=0) - np.min(data, axis=0))
 
-        # Initialize medoid
-        def initialize_medoids(data, id):
-            if id in [1, 2, 3, 4, 5]:
-                return [data[0], data[1], data[2]]  # Change as necessary
-            return [data[0], data[1], data[2]]
-
-        medoids = initialize_medoids(normalized_data, id)
-
-        # Clustering logic
-        def calculate_distance(point1, point2):
-            return np.sqrt(np.sum((point1 - point2) ** 2))
-
-        def assign_clusters(data, medoids):
-            clusters = []
-            for point in data:
-                distances = [calculate_distance(point, medoid) for medoid in medoids]
-                clusters.append(np.argmin(distances))
-            return clusters
-
-        # Main loop for clustering
-        clusters = assign_clusters(normalized_data, medoids)
+        # Perform K-Medoids clustering
+        k = 3  # Number of clusters
+        initial_medoids = [0, 1, 2]  # You can set this manually
+        second_medoids = [3, 4, 5]   # You can set this manually
+        medoids, labels, iteration_history = k_medoids(normalized_data, k, initial_medoids=initial_medoids, second_medoids=second_medoids)
 
         # Prepare the results for display
         clustering_results = []
-        for i, cluster in enumerate(clusters):
+        for i, (label, original, normalized) in enumerate(zip(labels, data, normalized_data)):
             clustering_results.append({
                 'kecamatan': kecamatan_names[i],
-                'cluster': cluster + 1,
-                'data': normalized_data[i].tolist()
+                'cluster': label + 1,
+                'original_data': original.tolist(),
+                'normalized_data': normalized.tolist()
             })
 
-        # Prepare data for display in the template
-        total_clusters = {0: 0, 1: 0, 2: 0}
-        for cluster in clusters:
-            total_clusters[cluster] += 1
+        # Calculate total clusters
+        total_clusters = {i: np.sum(labels == i) for i in range(k)}
 
         return render_template('algoritma/clustering.html',
                                title='K-Medoids Clustering',
                                jenis_penyakit=jenis_penyakit,
                                kriteria=kriteria,
-                               original_data=data.tolist(),
-                               normalized_data=normalized_data.tolist(),
                                clustering_results=clustering_results,
-                               total_clusters=total_clusters)
+                               total_clusters=total_clusters,
+                               iteration_history=iteration_history,
+                               final_medoids=medoids.tolist())
 
     return redirect(url_for('login'))
-
-
+ 
+ 
 if __name__ == '__main__':
    app.run(debug=True)
