@@ -61,37 +61,38 @@
                 </table>
             </div>
 
-            <!-- Iteration History -->
-            <h4 class="card-title">Iteration History</h4>
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Iteration</th>
-                            <th>Medoids</th>
-                            <th>Total Distance</th>
-                            <th>Change</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for iteration in iteration_history %}
+            <!-- Iteration History with Euclidean Distances -->
+            <h4 class="card-title">Iteration History with Euclidean Distances</h4>
+            {% for iteration in iteration_history %}
+                <h5>Iteration {{ iteration['iteration'] }}</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
                             <tr>
-                                <td>{{ iteration['iteration'] }}</td>
-                                <td>
-                                    {% for medoid in iteration['medoids'] %}
-                                        {% for value in medoid %}
-                                            {{ value|round(4) if value is number else value }}
-                                        {% endfor %}
-                                        <br>
-                                    {% endfor %}
-                                </td>
-                                <td>{{ iteration['total_distance']|round(4) if iteration['total_distance'] is number else iteration['total_distance'] }}</td>
-                                <td>{{ iteration['change']|round(4) if iteration['change'] is number else iteration['change'] }}</td>
+                                <th>Kecamatan</th>
+                                {% for i in range(iteration['medoids']|length) %}
+                                    <th>Distance to Medoid {{ i + 1 }}</th>
+                                {% endfor %}
+                                <th>Assigned Cluster</th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {% for i in range(kecamatan_names|length) %}
+                                <tr>
+                                    <td>{{ kecamatan_names[i] }}</td>
+                                    {% for distance in iteration['distances'][i] %}
+                                        <td>{{ distance|round(4) }}</td>
+                                    {% endfor %}
+                                    <td>{{ iteration['labels'][i] + 1 }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p>Total Distance: {{ iteration['total_distance']|round(4) }}</p>
+                <p>Change: {{ iteration['change']|round(4) }}</p>
+                <hr>
+            {% endfor %}
 
             <!-- Final Clustering Results -->
             <h4 class="card-title">Final Clustering Results</h4>

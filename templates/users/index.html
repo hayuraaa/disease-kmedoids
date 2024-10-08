@@ -51,14 +51,14 @@
                                             <div class="row">
                                                 <div class="col mb-4 mt-2">
                                                     <div class="form-floating form-floating-outline">
-                                                        <input type="hidden" name="id" value="{{ row.0 }}" />
-                                                        <input type="text" name="nama" value="{{ row.1 }}" id="nameBasic" class="form-control"
+                                                        <input type="hidden" name="id_user" value="{{ row.0 }}" />
+                                                        <input type="text" name="nama_user" value="{{ row.1 }}" id="nameBasic" class="form-control"
                                                             required placeholder="Enter Name" />
                                                         <label for="nameBasic">Nama Lengkap</label>
                                                     </div>
                                                 </div>
                                             </div>
-                        
+
                                             <div class="col mb-4">
                                                 <div class="form-floating form-floating-outline">
                                                     <input type="text" name="username" value="{{ row.2 }}" id="emailBasic" class="form-control"
@@ -66,15 +66,14 @@
                                                     <label for="emailBasic">Username</label>
                                                 </div>
                                             </div>
-                        
+
                                             <div class="col mb-4">
                                                 <div class="form-floating form-floating-outline">
-                                                    <input type="password" name="password" value="{{ row.3 }}" id="emailBasic" class="form-control"
+                                                    <input type="password" name="password" value="{{ row.3 }}" id="passwordBasic" class="form-control"
                                                         required placeholder="enter password" />
-                                                    <label for="emailBasic">Password</label>
+                                                    <label for="passwordBasic">Password</label>
                                                 </div>
                                             </div>
-                        
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
@@ -108,7 +107,7 @@
                     <div class="row">
                         <div class="col mb-4 mt-2">
                             <div class="form-floating form-floating-outline">
-                                <input type="text" name="nama" id="nameBasic" class="form-control"
+                                <input type="text" name="nama_user" id="nameBasic" class="form-control"
                                     required placeholder="Enter Name" />
                                 <label for="nameBasic">Nama Lengkap</label>
                             </div>
@@ -125,12 +124,11 @@
 
                     <div class="col mb-4">
                         <div class="form-floating form-floating-outline">
-                            <input type="password" name="password" id="emailBasic" class="form-control"
+                            <input type="password" name="password" id="passwordBasic" class="form-control"
                                 required placeholder="enter password" />
-                            <label for="emailBasic">Password</label>
+                            <label for="passwordBasic">Password</label>
                         </div>
                     </div>
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">

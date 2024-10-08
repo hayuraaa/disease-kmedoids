@@ -141,12 +141,12 @@ def add_user():
 
       if request.method == 'POST':
          flash("Data Berhasil Ditambah")
-         nama = request.form['nama']
+         nama = request.form['nama_user']
          username = request.form['username']
          password = request.form['password']
 
          cur = mysql.connection.cursor()
-         cur.execute("INSERT INTO users (nama, username, password) VALUES (%s, %s, %s)" ,(nama, username, password))
+         cur.execute("INSERT INTO users (nama_user, username, password) VALUES (%s, %s, %s)" ,(nama, username, password))
          mysql.connection.commit()
 
          return redirect(url_for('users'))
@@ -161,13 +161,13 @@ def edit_user():
       if request.method == 'POST':
          
          flash("Data Berhasil Diedit")
-         id_user = request.form['id']
-         nama = request.form['nama']
+         id_user = request.form['id_user']
+         nama = request.form['nama_user']
          username = request.form['username']
          password = request.form['password']
 
          cur = mysql.connection.cursor()
-         cur.execute("UPDATE users SET nama = %s, username = %s, password = %s WHERE id_user = %s " ,(nama, username, password, id_user))
+         cur.execute("UPDATE users SET nama_user = %s, username = %s, password = %s WHERE id_user = %s " ,(nama, username, password, id_user))
          mysql.connection.commit()
          return redirect(url_for('users'))
    else :
@@ -211,10 +211,10 @@ def add_jenis():
       if request.method == 'POST':
          flash("Data Berhasil Ditambah")
          nama_jenis = request.form['nama_jenis']
-         inisial_jenis = request.form['inisial_jenis']
+         inisial_jenis = request.form['inisial_tindak']
 
          cur = mysql.connection.cursor()
-         cur.execute("INSERT INTO jenis_penyakit (nama_jenis, inisial_jenis) VALUES (%s, %s)" ,(nama_jenis, inisial_jenis))
+         cur.execute("INSERT INTO jenis_penyakit (nama_jenis, inisial_tindak) VALUES (%s, %s)" ,(nama_jenis, inisial_jenis))
          mysql.connection.commit()
 
          return redirect(url_for('jenis'))
@@ -231,10 +231,10 @@ def edit_jenis():
          flash("Data Berhasil Diedit")
          id_jenis = request.form['id_jenis']
          nama_jenis = request.form['nama_jenis']
-         inisial_jenis = request.form['inisial_jenis']
+         inisial_jenis = request.form['inisial_tindak']
 
          cur = mysql.connection.cursor()
-         cur.execute("UPDATE jenis_penyakit SET nama_jenis = %s, inisial_jenis = %s  WHERE id_jenis = %s " ,(nama_jenis, inisial_jenis, id_jenis))
+         cur.execute("UPDATE jenis_penyakit SET nama_jenis = %s, inisial_tindak = %s  WHERE id_jenis = %s " ,(nama_jenis, inisial_jenis, id_jenis))
          mysql.connection.commit()
          return redirect(url_for('jenis'))
    else :
@@ -449,24 +449,33 @@ def edit_kecamatan():
 
 #------------ELBOW------------#
 def get_data_dummy():
-    # Data 10 baris dengan 4 kolom
     data = np.array([
-        [1.0, 2.0, 3.0, 4.0],
-        [2.1, 3.5, 4.0, 5.5],
-        [1.5, 2.8, 3.3, 4.1],
-        [5.2, 6.3, 7.4, 8.5],
-        [5.5, 6.1, 7.0, 8.0],
-        [3.2, 4.2, 5.2, 6.2],
-        [4.1, 5.2, 6.3, 7.4],
-        [2.9, 3.8, 4.7, 5.6],
-        [6.5, 7.5, 8.5, 9.5],
-        [7.0, 8.0, 9.0, 10.0]
-    ])
-    # Nama kecamatan
+    [17, 14, 12],
+    [9, 11, 9],
+    [7, 7, 6],
+    [12, 14, 7],
+    [6, 1, 7],
+    [2, 2, 3],
+    [1, 4, 5],
+    [3, 4, 8],
+    [2, 4, 6],
+    [2, 1, 4],
+    [5, 6, 6],
+    [21, 20, 11],
+    [2, 1, 1],
+    [1, 2, 4],
+    [1, 3, 4],
+    [5, 5, 2],
+    [4, 1, 5]
+])
+
+
+    # List of kecamatan names from your table
     kecamatan_names = [
-        "Kecamatan A", "Kecamatan B", "Kecamatan C", 
-        "Kecamatan D", "Kecamatan E", "Kecamatan F", 
-        "Kecamatan G", "Kecamatan H", "Kecamatan I", "Kecamatan J"
+        "Kota Juang", "Jeumpa", "Kuala", "Juli", "Jeunieb", "Peulimbang", 
+        "Pandrah", "Peudada", "Samalanga", "Simpang Mamplam", "Jangka", 
+        "Peusangan", "Peusangan Selatan", "Peusangan Siblah Krueng", 
+        "Makmur", "Kuta Blang", "Gandapura"
     ]
     
     return data, kecamatan_names
@@ -590,6 +599,7 @@ def k_medoids(data, k, max_iterations=100, initial_medoids=None, second_medoids=
         'iteration': 0,
         'medoids': medoids.tolist(),
         'labels': labels.tolist(),
+        'distances': distances.tolist(),
         'total_distance': current_cost,
         'change': 0
     }]
@@ -609,6 +619,7 @@ def k_medoids(data, k, max_iterations=100, initial_medoids=None, second_medoids=
             'iteration': iteration,
             'medoids': new_medoids.tolist(),
             'labels': new_labels.tolist(),
+            'distances': new_distances.tolist(),
             'total_distance': new_cost,
             'change': change
         })
@@ -622,7 +633,7 @@ def k_medoids(data, k, max_iterations=100, initial_medoids=None, second_medoids=
         current_cost = new_cost
     
     return medoids, labels, iteration_history
- 
+
 @app.route('/clustering/<int:id>', methods=['GET', 'POST'])
 def clustering(id):
     if 'status' in session and session['status'] == "Login":
@@ -685,7 +696,8 @@ def clustering(id):
                                clustering_results=clustering_results,
                                total_clusters=total_clusters,
                                iteration_history=iteration_history,
-                               final_medoids=medoids.tolist())
+                               final_medoids=medoids.tolist(),
+                               kecamatan_names=kecamatan_names)
 
     return redirect(url_for('login'))
  
