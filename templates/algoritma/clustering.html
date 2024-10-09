@@ -63,14 +63,14 @@
 
             <!-- Iteration History with Euclidean Distances -->
             <h4 class="card-title">Iteration History with Euclidean Distances</h4>
-            {% for iteration in iteration_history %}
-                <h5>Iteration {{ iteration['iteration'] }}</h5>
+            {% for iter in iteration_history %}
+                <h5>Iteration {{ iter['iteration'] + 1 }}</h5>
                 <div class="table-responsive">
                     <table class="table table-bordered">
                         <thead>
                             <tr>
                                 <th>Kecamatan</th>
-                                {% for i in range(iteration['medoids']|length) %}
+                                {% for i in range(iter['medoids']|length) %}
                                     <th>Distance to Medoid {{ i + 1 }}</th>
                                 {% endfor %}
                                 <th>Assigned Cluster</th>
@@ -80,17 +80,42 @@
                             {% for i in range(kecamatan_names|length) %}
                                 <tr>
                                     <td>{{ kecamatan_names[i] }}</td>
-                                    {% for distance in iteration['distances'][i] %}
+                                    {% for distance in iter['distances'][i] %}
                                         <td>{{ distance|round(4) }}</td>
                                     {% endfor %}
-                                    <td>{{ iteration['labels'][i] + 1 }}</td>
+                                    <td>{{ iter['labels'][i] + 1 }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                <p>Total Distance: {{ iteration['total_distance']|round(4) }}</p>
-                <p>Change: {{ iteration['change']|round(4) }}</p>
+                <p>Total Distance: {{ iter['total_distance']|round(4) }}</p>
+                <p>Change: {{ iter['change']|round(4) }}</p>
+
+                <!-- Medoids for this iteration -->
+                <h5>Medoids for Iteration {{ iter['iteration'] +1 }}</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Cluster</th>
+                                {% for krit in kriteria %}
+                                    <th>{{ krit[1] }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for medoid in iter['medoids'] %}
+                                <tr>
+                                    <td>C{{ loop.index }}</td>
+                                    {% for value in medoid %}
+                                        <td>{{ value|round(4) if value is number else value }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 <hr>
             {% endfor %}
 
@@ -123,30 +148,6 @@
                 <li>Rendah (C3): {{ total_clusters[2] }}</li>
             </ul>
 
-            <!-- Final Medoids -->
-            <h4 class="card-title">Final Medoids</h4>
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Cluster</th>
-                            {% for krit in kriteria %}
-                                <th>{{ krit[1] }}</th>
-                            {% endfor %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for medoid in final_medoids %}
-                            <tr>
-                                <td>C{{ loop.index }}</td>
-                                {% for value in medoid %}
-                                    <td>{{ value|round(4) if value is number else value }}</td>
-                                {% endfor %}
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
 </div>

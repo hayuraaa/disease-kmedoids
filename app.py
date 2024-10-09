@@ -672,8 +672,8 @@ def clustering(id):
 
         # Perform K-Medoids clustering
         k = 3  # Number of clusters
-        initial_medoids = [0, 1, 2]  # You can set this manually
-        second_medoids = [3, 4, 5]   # You can set this manually
+        initial_medoids = [0, 1, 2]
+        second_medoids = [4, 5, 6] 
         medoids, labels, iteration_history = k_medoids(normalized_data, k, initial_medoids=initial_medoids, second_medoids=second_medoids)
 
         # Prepare the results for display
