@@ -13,6 +13,8 @@ import pandas as pd
 from sklearn.metrics import pairwise_distances_argmin_min
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -632,7 +634,8 @@ def k_medoids(data, k, max_iterations=100, initial_medoids=None, second_medoids=
         distances = new_distances
         current_cost = new_cost
     
-    return medoids, labels, iteration_history
+    last_iteration = iteration_history[-1]
+    return np.array(last_iteration['medoids']), np.array(last_iteration['labels']), iteration_history
 
 @app.route('/clustering/<int:id>', methods=['GET', 'POST'])
 def clustering(id):
@@ -666,14 +669,20 @@ def clustering(id):
         # Prepare data for clustering
         data = np.array(list(nilai.values()))
         kecamatan_names = list(kecamatan.values())
+        
+        medoids_map = {
+            1: ([0, 1, 2], [4, 5, 6]), #stroke
+            2: ([0, 4, 5], [10, 7, 6]), #hipertensi
+            3: ([0, 1, 4], [6, 9, 11]),
+            4: ([2, 4, 6], [0, 1, 3]),
+        }
+        
+        initial_medoids, second_medoids = medoids_map.get(id, ([0, 1, 2], [4, 5, 6]))
 
         # Normalize the data
         normalized_data = (data - np.min(data, axis=0)) / (np.max(data, axis=0) - np.min(data, axis=0))
 
-        # Perform K-Medoids clustering
         k = 3  # Number of clusters
-        initial_medoids = [0, 1, 2]
-        second_medoids = [4, 5, 6] 
         medoids, labels, iteration_history = k_medoids(normalized_data, k, initial_medoids=initial_medoids, second_medoids=second_medoids)
 
         # Prepare the results for display
@@ -688,7 +697,24 @@ def clustering(id):
 
         # Calculate total clusters
         total_clusters = {i: np.sum(labels == i) for i in range(k)}
+        
+        plt.figure(figsize=(8, 6))
+        labels = ['Tinggi (C1)', 'Sedang (C2)', 'Rendah (C3)']
+        sizes = [total_clusters[0], total_clusters[1], total_clusters[2]]
+        colors = ['#FF6384', '#36A2EB', '#FFCE56']
+        plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+        plt.axis('equal')
+        plt.title('Jumlah Klaster')
+        
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
 
+        pie_chart = base64.b64encode(buf.getvalue()).decode('utf-8')
+    
+        buf.close()
+        plt.close()
+         
         return render_template('algoritma/clustering.html',
                                title='K-Medoids Clustering',
                                jenis_penyakit=jenis_penyakit,
@@ -697,7 +723,8 @@ def clustering(id):
                                total_clusters=total_clusters,
                                iteration_history=iteration_history,
                                final_medoids=medoids.tolist(),
-                               kecamatan_names=kecamatan_names)
+                               kecamatan_names=kecamatan_names,
+                               pie_chart=pie_chart)
 
     return redirect(url_for('login'))
  
