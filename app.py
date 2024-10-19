@@ -592,7 +592,7 @@ def assign_points_to_medoids(data, medoids):
 def calculate_total_cost(distances, labels):
     return sum(distances[i, labels[i]] for i in range(len(labels)))
 
-def k_medoids(data, k, max_iterations=100, initial_medoids=None, second_medoids=None):
+def k_medoids(data, k, max_iterations=100, initial_medoids=None, second_medoids=None, third_medoids=None):
     medoids = initialize_medoids(data, k, initial_medoids)
     labels, distances = assign_points_to_medoids(data, medoids)
     current_cost = calculate_total_cost(distances, labels)
@@ -609,6 +609,8 @@ def k_medoids(data, k, max_iterations=100, initial_medoids=None, second_medoids=
     for iteration in range(1, max_iterations + 1):
         if iteration == 1 and second_medoids is not None:
             new_medoids = initialize_medoids(data, k, second_medoids)
+        elif iteration == 2 and third_medoids is not None:
+            new_medoids = initialize_medoids(data, k, third_medoids)
         else:
             new_medoids = data[np.random.choice(data.shape[0], k, replace=False)]
         
@@ -673,17 +675,21 @@ def clustering(id):
         medoids_map = {
             1: ([0, 1, 2], [4, 5, 6]), #stroke
             2: ([0, 4, 5], [10, 7, 6]), #hipertensi
-            3: ([0, 1, 4], [6, 9, 11]),
+            3: ([0, 1, 4], [6, 9, 11], [7, 8, 12]), #skizoprenia
             4: ([2, 4, 6], [0, 1, 3]),
+            5: ([0, 1, 2], [4, 5, 6]),
         }
         
-        initial_medoids, second_medoids = medoids_map.get(id, ([0, 1, 2], [4, 5, 6]))
+        medoids_config = medoids_map.get(id, ([0, 1, 2], [4, 5, 6]))  # Default jika id tidak ditemukan
+        initial_medoids = medoids_config[0]
+        second_medoids = medoids_config[1] if len(medoids_config) > 1 else None
+        third_medoids = medoids_config[2] if len(medoids_config) > 2 else None
 
         # Normalize the data
         normalized_data = (data - np.min(data, axis=0)) / (np.max(data, axis=0) - np.min(data, axis=0))
 
         k = 3  # Number of clusters
-        medoids, labels, iteration_history = k_medoids(normalized_data, k, initial_medoids=initial_medoids, second_medoids=second_medoids)
+        medoids, labels, iteration_history = k_medoids(normalized_data, k, initial_medoids=initial_medoids, second_medoids=second_medoids, third_medoids=third_medoids)
 
         # Prepare the results for display
         clustering_results = []
