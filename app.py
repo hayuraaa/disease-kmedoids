@@ -644,7 +644,11 @@ def clustering(id):
     if 'status' in session and session['status'] == "Login":
         cur = mysql.connection.cursor()
         cur.execute('SELECT * FROM jenis_penyakit WHERE id_jenis = %s', (id,))
-        jenis_penyakit = cur.fetchone()
+        row = cur.fetchone()
+        jenis_penyakit = {
+            'id_jenis': row[0],
+            'nama_jenis': row[1]
+        }
 
         # Get the kecamatan data and corresponding kriteria
         cur.execute('''
@@ -676,8 +680,8 @@ def clustering(id):
             1: ([0, 1, 2], [4, 5, 6]), #stroke
             2: ([0, 4, 5], [10, 7, 6]), #hipertensi
             3: ([0, 1, 4], [6, 9, 11], [7, 8, 12]), #skizoprenia
-            4: ([2, 4, 6], [0, 1, 3]),
-            5: ([0, 1, 2], [4, 5, 6]),
+            4: ([1, 3, 4], [10, 7, 6]), #dyspepsia
+            5: ([0, 1, 2], [4, 5, 6]), #pneumonia
         }
         
         medoids_config = medoids_map.get(id, ([0, 1, 2], [4, 5, 6]))  # Default jika id tidak ditemukan

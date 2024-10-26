@@ -3,7 +3,7 @@
 <div class="container-fluid page-body-wrapper">
     <div class="main-panel">
         <div class="content-wrapper">
-            <h3 class="page-title">Data {{ jenis_penyakit['nama_jenis'] }}</h3>
+            <h3 class="page-title">Hasil Cluster Penyakit {{ jenis_penyakit['nama_jenis'] }}</h3>
             <a href="{{ url_for('pilih_clustering') }}" class="btn btn-danger">Kembali</a>
             <br><br>
 
@@ -62,7 +62,7 @@
             </div>
 
             <!-- Iteration History with Euclidean Distances -->
-            <h4 class="card-title">Iteration History with Euclidean Distances</h4>
+            <h4 class="card-title">Perhitungan Euclidean Distances</h4>
             {% for iter in iteration_history %}
                 <h5>Iteration {{ iter['iteration'] + 1 }}</h5>
                 <div class="table-responsive">
@@ -71,9 +71,9 @@
                             <tr>
                                 <th>Kecamatan</th>
                                 {% for i in range(iter['medoids']|length) %}
-                                    <th>Distance to Medoid {{ i + 1 }}</th>
+                                    <th>Jarak Medoid {{ i + 1 }}</th>
                                 {% endfor %}
-                                <th>Assigned Cluster</th>
+                                <th>Cluster</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -89,8 +89,8 @@
                         </tbody>
                     </table>
                 </div>
-                <p>Total Distance: {{ iter['total_distance']|round(4) }}</p>
-                <p>Change: {{ iter['change']|round(4) }}</p>
+                <p>Total Jarak: {{ iter['total_distance']|round(4) }}</p>
+                <p>Nilai Simpangan: {{ iter['change']|round(4) }}</p>
 
                 <!-- Medoids for this iteration -->
                 <h5>Medoids for Iteration {{ iter['iteration'] +1 }}</h5>
@@ -152,6 +152,7 @@
             <img src="data:image/png;base64,{{ pie_chart }}" alt="Pie Chart Jumlah Klaster" class="img-fluid">
 
         </div>
+    <a href="{{ url_for('pilih_clustering') }}" class="btn btn-danger">Kembali</a>
     </div>
 </div>
 {% endblock %}
