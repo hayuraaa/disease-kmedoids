@@ -652,20 +652,28 @@ def clustering(id):
 
         # Get the kecamatan data and corresponding kriteria
         cur.execute('''
-            SELECT kecamatan.id_kecamatan, kecamatan.nama_kecamatan, data_bobot.id_kriteria, data_bobot.bobot 
-            FROM kecamatan 
-            INNER JOIN data_bobot ON kecamatan.id_kecamatan = data_bobot.id_kecamatan 
-            WHERE id_jenis = %s
-        ''', (id,))
+         SELECT kecamatan.id_kecamatan, kecamatan.nama_kecamatan, 
+               kecamatan.latitude, kecamatan.longitude,
+               data_bobot.id_kriteria, data_bobot.bobot 
+         FROM kecamatan 
+         INNER JOIN data_bobot ON kecamatan.id_kecamatan = data_bobot.id_kecamatan 
+         WHERE id_jenis = %s
+         ''', (id,))
         bobot = cur.fetchall()
 
         nilai = {}
         kecamatan = {}
+        coordinates = {}
         for row in bobot:
-            if row[0] not in nilai:
-                nilai[row[0]] = []
-            nilai[row[0]].append(row[3])
-            kecamatan[row[0]] = row[1]
+            id_kecamatan = row[0]
+            if id_kecamatan not in nilai:
+                nilai[id_kecamatan] = []
+                kecamatan[id_kecamatan] = row[1]
+                coordinates[id_kecamatan] = {
+                    'latitude': row[2],
+                    'longitude': row[3]
+                }
+            nilai[id_kecamatan].append(row[5])
 
         # Get kriteria
         cur.execute('SELECT * FROM kriteria')
@@ -675,6 +683,7 @@ def clustering(id):
         # Prepare data for clustering
         data = np.array(list(nilai.values()))
         kecamatan_names = list(kecamatan.values())
+        kecamatan_coords = list(coordinates.values())
         
         medoids_map = {
             1: ([0, 1, 2], [4, 5, 6]), #stroke
@@ -702,7 +711,9 @@ def clustering(id):
                 'kecamatan': kecamatan_names[i],
                 'cluster': label + 1,
                 'original_data': original.tolist(),
-                'normalized_data': normalized.tolist()
+                'normalized_data': normalized.tolist(),
+                'latitude': kecamatan_coords[i]['latitude'],
+                'longitude': kecamatan_coords[i]['longitude']
             })
 
         # Calculate total clusters

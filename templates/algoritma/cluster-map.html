@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<div class="card">
+  <div class="card-header">
+    <h4 class="card-title">Visualisasi Peta Clustering</h4>
+  </div>
+  <div class="card-body">
+    <div id="cluster-map" style="height: 500px"></div>
+  </div>
+</div>
+
+<!-- Include Leaflet CSS and JS -->
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+  // Initialize the map centered on Bireuen, Aceh
+  const map = L.map('cluster-map').setView([5.1836, 96.7013], 10);
+
+  // Add OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Define colors for each cluster
+  const clusterColors = {
+    1: '#FF6384', // Tinggi (Red)
+    2: '#36A2EB', // Sedang (Blue)
+    3: '#FFCE56'  // Rendah (Yellow)
+  };
+
+  // Add markers for each kecamatan
+  {% for result in clustering_results %}
+    const marker = L.circleMarker(
+      [{{ result.latitude }}, {{ result.longitude }}],
+      {
+        radius: 8,
+        fillColor: clusterColors[{{ result.cluster }}],
+        color: '#fff',
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+      }
+    ).addTo(map);
+
+    // Add popup with kecamatan info
+    marker.bindPopup(
+      '<strong> {{ result.kecamatan }}</strong><br>' +
+      'Cluster: ' + ({{ result.cluster }} === 1 ? 'Tinggi' :
+                     {{ result.cluster }} === 2 ? 'Sedang' : 'Rendah')
+    );
+  {% endfor %}
+
+  // Add legend
+  const legend = L.control({ position: 'bottomright' });
+  legend.onAdd = function(map) {
+    const div = L.DomUtil.create('div', 'info legend');
+    div.style.backgroundColor = 'white';
+    div.style.padding = '10px';
+    div.style.borderRadius = '5px';
+    div.style.border = '1px solid #ccc';
+
+    div.innerHTML += '<h4>Cluster</h4>';
+    div.innerHTML += '<div><i style="background: #FF6384; width: 15px; height: 15px; display: inline-block; margin-right: 5px;"></i> Tinggi (C1)</div>';
+    div.innerHTML += '<div><i style="background: #36A2EB; width: 15px; height: 15px; display: inline-block; margin-right: 5px;"></i> Sedang (C2)</div>';
+    div.innerHTML += '<div><i style="background: #FFCE56; width: 15px; height: 15px; display: inline-block; margin-right: 5px;"></i> Rendah (C3)</div>';
+
+    return div;
+  };
+  legend.addTo(map);
+</script>
