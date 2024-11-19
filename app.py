@@ -1,6 +1,5 @@
 from flask import Flask, redirect, request, render_template, url_for, session, flash
 from flask_mysqldb import MySQL
-import pymysql
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from sklearn.preprocessing import LabelEncoder 
