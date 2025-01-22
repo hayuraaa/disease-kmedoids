@@ -16,6 +16,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
+import os
 import base64
 import re
 import nltk
@@ -81,9 +82,8 @@ def register():
    
 @app.route('/logout')
 def logout():
-    title = 'logout'
     session.clear()
-    return render_template('auth/login.html', values=title)
+    return redirect(url_for('login')), 302, {'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'}
 #-------Login---------#   
    
 @app.route('/dashboard')
@@ -119,6 +119,42 @@ def dashboard():
    else :
       title = 'Belom Login'
       return render_template('auth/login.html', values=title)
+
+@app.route('/dataset')
+def dataset():
+    if 'status' in session and session['status'] == "Login":
+        try:
+            page = request.args.get('page', 1, type=int)
+            per_page = request.args.get('per_page', -1, type=int)  # Default show all
+            
+            file_path = os.path.join(os.path.dirname(__file__), 'static', 'dataset.xlsx')
+            df = pd.read_excel(file_path)
+            df.columns = ['no', 'nama', 'alamat', 'kecamatan', 'jenis_penyakit']
+            
+            total_records = len(df)
+            
+            if per_page == -1:
+                data = df.fillna('').to_dict('records')
+                total_pages = 1
+            else:
+                total_pages = -(-total_records // per_page)
+                start_idx = (page - 1) * per_page
+                end_idx = start_idx + per_page
+                data = df.iloc[start_idx:end_idx].fillna('').to_dict('records')
+            
+            return render_template('dataset/index.html', 
+                                 title='Dataset Penyakit',
+                                 data=data,
+                                 page=page,
+                                 per_page=per_page,
+                                 total_pages=total_pages,
+                                 total_records=total_records)
+                                 
+        except Exception as e:
+            flash(f"Error: {str(e)}")
+            return redirect(url_for('dashboard'))
+            
+    return redirect(url_for('login'))
 
 
 @app.route('/users')
